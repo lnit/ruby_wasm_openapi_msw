@@ -4,4 +4,6 @@ source "https://rubygems.org"
 
 # gem "rails"
 
-gem "ruby_wasm", "~> 2.6"
+group "development" do
+  gem "ruby_wasm", "~> 2.6"
+end
