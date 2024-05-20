@@ -1,0 +1,25 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ruby_wasm (2.6.0)
+    ruby_wasm (2.6.0-aarch64-linux)
+    ruby_wasm (2.6.0-aarch64-linux-musl)
+    ruby_wasm (2.6.0-arm64-darwin)
+    ruby_wasm (2.6.0-x86_64-darwin)
+    ruby_wasm (2.6.0-x86_64-linux)
+    ruby_wasm (2.6.0-x86_64-linux-musl)
+
+PLATFORMS
+  aarch64-linux
+  aarch64-linux-musl
+  arm64-darwin
+  ruby
+  x86_64-darwin
+  x86_64-linux
+  x86_64-linux-musl
+
+DEPENDENCIES
+  ruby_wasm (~> 2.6)
+
+BUNDLED WITH
+   2.5.9
