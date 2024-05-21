@@ -7,3 +7,5 @@ source "https://rubygems.org"
 group "development" do
   gem "ruby_wasm", "~> 2.6"
 end
+
+gem "rainbow", "~> 3.1"

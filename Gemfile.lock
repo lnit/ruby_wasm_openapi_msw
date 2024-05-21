@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    rainbow (3.1.1)
     ruby_wasm (2.6.0)
     ruby_wasm (2.6.0-aarch64-linux)
     ruby_wasm (2.6.0-aarch64-linux-musl)
@@ -19,6 +20,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
+  rainbow (~> 3.1)
   ruby_wasm (~> 2.6)
 
 BUNDLED WITH
