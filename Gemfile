@@ -5,7 +5,14 @@ source "https://rubygems.org"
 # gem "rails"
 
 group "development" do
-  gem "ruby_wasm", "~> 2.6"
+  gem "webrick"
 end
 
-gem "rainbow", "~> 3.1"
+group "wasm" do
+  gem "ruby_wasm", "~> 2.6"
+  gem "openapi3_parser"
+end
+
+group "js" do
+  gem "js", "~> 2.6"
+end

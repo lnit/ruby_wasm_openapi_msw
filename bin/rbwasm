@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+ENV["BUNDLE_ONLY"] = "wasm"
+
+if ENV["JS"] == "true"
+  ENV["BUNDLE_ONLY"] = "wasm js"
+end
+
+require "bundler/setup"
+
+require "ruby_wasm"
+require "ruby_wasm/cli"
+
+# Add excluded gems
+RubyWasm::Packager::EXCLUDED_GEMS << "commonmarker"
+
+RubyWasm::CLI.new(stdout: $stdout, stderr: $stderr).run(ARGV)
