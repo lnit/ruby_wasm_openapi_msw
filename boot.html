@@ -1,7 +1,9 @@
 <html>
   <head>
     <title>Mock Server on Service Worker</title>
+    <meta charset="utf-8"/>
     <script type="module">
+      import { openDB, deleteDB, wrap, unwrap  } from 'https://cdn.jsdelivr.net/npm/idb@8/+esm';
       import { DefaultRubyVM } from "https://cdn.jsdelivr.net/npm/@ruby/wasm-wasi@2.6.1/dist/browser/+esm";
       const response = await fetch("/my-ruby-app.wasm");
       const module = await WebAssembly.compileStreaming(response);
@@ -10,7 +12,53 @@
 
       vm.eval(`
         puts "Hello, world!"
+
+        require "/bundle/setup"
+        require_relative "src/loader"
+
+        def document
+          @document ||= JS.global[:document]
+        end
+
+        def validate(text)
+          cond = Openapi3Parser.load(text).valid?
+          err = document.getElementById("error")
+          if cond
+            err[:innerText] = ""
+          else
+            err[:innerText] = "NG"
+          end
+        end
+
+        input = document.getElementById("spec-text")
+
+        input.addEventListener "change" do |e|
+          validate(e[:target][:value].to_s)
+        end
       `);
+
+      // create a indexedDB database and store seed data
+      let db = await openDB("OpenApiDatabase", 1, {
+        upgrade(db, oldVersion, newVersion, transaction, event) {
+          console.log(`Database version changed to ${db.version}`);
+
+          const objectStore = db.createObjectStore("apiSpecs", { keyPath: "id" });
+          objectStore.put({id: 1, specs: document.getElementById("spec-text").value})
+        }
+      });
+      console.log(`Database opened with version ${db.version}`);
+
+      document.getElementById("save").addEventListener("click", async () => {
+        console.log("Save button clicked");
+        const tx = db.transaction("apiSpecs", "readwrite");
+        const store = tx.objectStore("apiSpecs");
+        store.put({id: 1, specs: document.getElementById("spec-text").value});
+        await tx.done;
+        console.log("Specs saved");
+      });
+
+
+
 
       await navigator.serviceWorker.register("/service-worker.js", {
         scope: "/", type: "module"
@@ -18,7 +66,15 @@
     </script>
   </head>
   <body>
-    <textarea rows="20" cols="50" readonly>
+    <style>
+      .error {
+        color: #EE2222;
+        font-size: 2em;
+      }
+    </style>
+
+
+    <textarea id="spec-text" rows="15" cols="50">
 openapi: "3.0.0"
 info:
   version: 1.0.0
@@ -149,6 +205,11 @@ components:
           format: int32
         message:
           type: string
-      </textarea>
+    </textarea>
+    <div id="error" class="error"></div>
+    <div style="padding:10px">
+      <input type="button" id="save" value="保存"></input>
+    </div>
+
   </body>
 </html>
