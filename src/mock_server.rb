@@ -34,7 +34,7 @@ class MockServer
     content = response[:content]
     return status, nil unless content
 
-    example = content["application/json"].schema.example
+    example = content["application/json"].example_value
     return status, example.to_json
   end
 
