@@ -5,8 +5,14 @@
     <script type="module">
       import { openDB, deleteDB, wrap, unwrap  } from 'https://cdn.jsdelivr.net/npm/idb@8/+esm';
       import { DefaultRubyVM } from "https://cdn.jsdelivr.net/npm/@ruby/wasm-wasi@2.6.1/dist/browser/+esm";
-      const response = await fetch("/my-ruby-app.wasm");
-      const module = await WebAssembly.compileStreaming(response);
+
+      const wasm_buf = fetch("https://cdn.jsdelivr.net/npm/@lni_t/openapi-msw-bin@beta/build/openapi-msw.wasm.gz")
+        .then(response => response.blob())
+        .then(blob => blob.stream().pipeThrough(new DecompressionStream('gzip')))
+        .then(stream => new Response(stream))
+        .then(response => response.arrayBuffer());
+      const module = await WebAssembly.compile(await wasm_buf);
+
       const { vm } = await DefaultRubyVM(module);
       window.rubyVM = vm;
 
