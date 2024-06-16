@@ -1,0 +1,19 @@
+{
+  "name": "@lni_t/openapi-msw-bin",
+  "version": "0.0.2",
+  "description": "OpenAPI Mock Service Worker's WASM binary",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lnit/ruby_wasm_openapi_msw.git"
+  },
+  "author": "lni_t",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lnit/ruby_wasm_openapi_msw/issues"
+  },
+  "homepage": "https://github.com/lnit/ruby_wasm_openapi_msw#readme"
+}
