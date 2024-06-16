@@ -34,7 +34,7 @@ class MockServer
     content = response[:content]
     return status, nil unless content
 
-    example = content["application/json"].schema.example
+    example = content["application/json"].example_value
     return status, example.to_json
   end
 
@@ -45,5 +45,32 @@ class MockServer
     end
 
     doc.paths[target_path]
+  end
+
+  def all_paths
+    doc.paths.keys.each_with_object({}) do |path, hash|
+      operations = %w[get post put delete patch head options].filter_map do |method|
+        next unless (operation = doc.paths[path][method])
+
+        status, response = operation.responses.first
+        content_type, content = response.content.first
+
+        detail = {
+          status:,
+          response: {
+            content_type:,
+            content:,
+            example_value: content&.example_value
+          }
+        }
+
+        [method, detail]
+      end.to_h
+
+      hash[path] = {
+        example_path: path.gsub(/{.*?}/, "1"),
+        operations:
+      }
+    end
   end
 end
