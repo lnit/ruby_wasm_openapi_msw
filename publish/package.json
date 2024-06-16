@@ -1,6 +1,6 @@
 {
   "name": "@lni_t/openapi-msw-bin",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "OpenAPI Mock Service Worker's WASM binary",
   "main": "index.js",
   "scripts": {
