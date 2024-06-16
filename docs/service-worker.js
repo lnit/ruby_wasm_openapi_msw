@@ -2,8 +2,12 @@ import { DefaultRubyVM } from "https://cdn.jsdelivr.net/npm/@ruby/wasm-wasi@2.6.
 import { openDB, deleteDB, wrap, unwrap  } from 'https://cdn.jsdelivr.net/npm/idb@8/+esm';
 
 const initRuby = async () => {
-  const response = await fetch("/my-ruby-app.wasm");
-  const module = await WebAssembly.compileStreaming(response);
+  const wasm_buf = fetch("https://cdn.jsdelivr.net/npm/@lni_t/openapi-msw-bin@beta/build/openapi-msw.wasm.gz")
+    .then(response => response.blob())
+    .then(blob => blob.stream().pipeThrough(new DecompressionStream('gzip')))
+    .then(stream => new Response(stream))
+    .then(response => response.arrayBuffer());
+  const module = await WebAssembly.compile(await wasm_buf);
 
   const { vm } = await DefaultRubyVM(module);
 
@@ -19,7 +23,7 @@ const initRuby = async () => {
 
 self.addEventListener('fetch', (event) => {
   const bootResources = [
-    "/boot.html", "/service-worker.js", "/my-ruby-app.wasm"
+    "/boot.html", "/service-worker.js"
   ]
   if (bootResources.find((r) => event.request.url.endsWith(r))) {
     console.log('[Service Worker] Fetching boot files from network:', event.request.url);
