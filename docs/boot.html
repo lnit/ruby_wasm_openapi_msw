@@ -16,32 +16,9 @@
       const { vm } = await DefaultRubyVM(module);
       window.rubyVM = vm;
 
-      vm.eval(`
-        puts "Hello, world!"
-
-        require "/bundle/setup"
-        require_relative "src/loader"
-
-        def document
-          @document ||= JS.global[:document]
-        end
-
-        def validate(text)
-          cond = Openapi3Parser.load(text).valid?
-          err = document.getElementById("error")
-          if cond
-            err[:innerText] = ""
-          else
-            err[:innerText] = "NG"
-          end
-        end
-
-        input = document.getElementById("spec-text")
-
-        input.addEventListener "change" do |e|
-          validate(e[:target][:value].to_s)
-        end
-      `);
+      const bootScript = await fetch("boot.rb")
+        .then(response => response.text());
+      vm.eval(bootScript);
 
       // create a indexedDB database and store seed data
       let db = await openDB("OpenApiDatabase", 1, {
@@ -56,11 +33,20 @@
 
       document.getElementById("save").addEventListener("click", async () => {
         console.log("Save button clicked");
-        const tx = db.transaction("apiSpecs", "readwrite");
-        const store = tx.objectStore("apiSpecs");
-        store.put({id: 1, specs: document.getElementById("spec-text").value});
-        await tx.done;
-        console.log("Specs saved");
+        const valid = vm.eval(`oas_valid?`).toJS();
+
+        if (valid) {
+          const tx = db.transaction("apiSpecs", "readwrite");
+          const store = tx.objectStore("apiSpecs");
+          const specText = document.getElementById("spec-text").value;
+          store.put({id: 1, specs: specText});
+          await tx.done;
+          console.log("Specs saved");
+          return;
+        } else {
+          alert("OpenAPI Spec is invalid. Please fix it.");
+          return;
+        }
       });
 
       await navigator.serviceWorker.register("/service-worker.js", {
