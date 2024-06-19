@@ -16,51 +16,57 @@
       const { vm } = await DefaultRubyVM(module);
       window.rubyVM = vm;
 
-      vm.eval(`
-        puts "Hello, world!"
+      const bootScript = await fetch("boot.rb")
+        .then(response => response.text());
+      vm.eval(bootScript);
 
-        require "/bundle/setup"
-        require_relative "src/loader"
-
-        def document
-          @document ||= JS.global[:document]
-        end
-
-        def validate(text)
-          cond = Openapi3Parser.load(text).valid?
-          err = document.getElementById("error")
-          if cond
-            err[:innerText] = ""
-          else
-            err[:innerText] = "NG"
-          end
-        end
-
-        input = document.getElementById("spec-text")
-
-        input.addEventListener "change" do |e|
-          validate(e[:target][:value].to_s)
-        end
-      `);
-
-      // create a indexedDB database and store seed data
+      // create a indexedDB database
       let db = await openDB("OpenApiDatabase", 1, {
         upgrade(db, oldVersion, newVersion, transaction, event) {
           console.log(`Database version changed to ${db.version}`);
 
-          const objectStore = db.createObjectStore("apiSpecs", { keyPath: "id" });
-          objectStore.put({id: 1, specs: document.getElementById("spec-text").value})
+          db.createObjectStore("apiSpecs", { keyPath: "id" });
         }
       });
       console.log(`Database opened with version ${db.version}`);
 
+      // load data
+      const tx = db.transaction("apiSpecs");
+      const apiSpecs = tx.objectStore("apiSpecs");
+      const spec = await apiSpecs.get(1);
+      if (spec){
+        console.log("Specs loaded from indexedDB");
+        document.getElementById("spec-text").value = spec.specs;
+      } else {
+        // store seed data
+        console.log("Specs not found in indexedDB");
+        const defaultYml = await fetch("_default.yml")
+          .then(response => response.text());
+        const tx = db.transaction("apiSpecs", "readwrite");
+        const apiSpecs = tx.objectStore("apiSpecs");
+        apiSpecs.put({id: 1, specs: defaultYml});
+        document.getElementById("spec-text").value = defaultYml
+      }
+      vm.eval(`visualize_mock_list`)
+
       document.getElementById("save").addEventListener("click", async () => {
         console.log("Save button clicked");
-        const tx = db.transaction("apiSpecs", "readwrite");
-        const store = tx.objectStore("apiSpecs");
-        store.put({id: 1, specs: document.getElementById("spec-text").value});
-        await tx.done;
-        console.log("Specs saved");
+        const valid = vm.eval(`oas_valid?`).toJS();
+        console.log("Executed oas_valid?");
+
+        if (valid) {
+          const tx = db.transaction("apiSpecs", "readwrite");
+          const store = tx.objectStore("apiSpecs");
+          const specText = document.getElementById("spec-text").value;
+          store.put({id: 1, specs: specText});
+          await tx.done;
+          console.log("Specs saved");
+          vm.eval(`visualize_mock_list`)
+          return;
+        } else {
+          alert("OpenAPI Spec is invalid. Please fix it.");
+          return;
+        }
       });
 
       await navigator.serviceWorker.register("/service-worker.js", {
@@ -77,152 +83,15 @@
     </style>
     <h2>OpenAPI Mock Server on Service Worker</h2>
 
-    <textarea id="spec-text" rows="15" cols="50">
-openapi: "3.0.0"
-info:
-  version: 1.0.0
-  title: Swagger Petstore
-  license:
-    name: MIT
-servers:
-  - url: http://petstore.swagger.io/v1
-paths:
-  /pets:
-    get:
-      summary: List all pets
-      operationId: listPets
-      tags:
-        - pets
-      parameters:
-        - name: limit
-          in: query
-          description: How many items to return at one time (max 100)
-          required: false
-          schema:
-            type: integer
-            maximum: 100
-            format: int32
-      responses:
-        '200':
-          description: A paged array of pets
-          headers:
-            x-next:
-              description: A link to the next page of responses
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Pets"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-    post:
-      summary: Create a pet
-      operationId: createPets
-      tags:
-        - pets
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Pet'
-        required: true
-      responses:
-        '201':
-          description: Null response
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /pets/{petId}:
-    get:
-      summary: Info for a specific pet
-      operationId: showPetById
-      tags:
-        - pets
-      parameters:
-        - name: petId
-          in: path
-          required: true
-          description: The id of the pet to retrieve
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Expected response to a valid request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Pet"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-components:
-  schemas:
-    Pet:
-      type: object
-      required:
-        - id
-        - name
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        tag:
-          type: string
-      example:
-        id: 1
-        name: ねこ
-        tag: cat
-    Pets:
-      type: array
-      maxItems: 100
-      items:
-        $ref: "#/components/schemas/Pet"
-      example:
-        - id: 1
-          name: ねこ
-          tag: cat
-        - id: 2
-          name: いぬ
-          tag: dog
-    Error:
-      type: object
-      required:
-        - code
-        - message
-      properties:
-        code:
-          type: integer
-          format: int32
-        message:
-          type: string
-    </textarea>
+    <textarea id="spec-text" rows="15" cols="50">Now Loading...</textarea>
     <div id="error" class="error"></div>
     <div style="padding:10px">
       <input type="button" id="save" value="保存"></input>
     </div>
-    <div id="mock_list">
-      <h2>Default Mock List</h2>
-      <ul>
-        <li>GET <a href="/pets" target="_blank" rel="noreferrer">/pets</a></li>
-        <li>POST /pets</li>
-        <li>GET <a href="/pets/1" target="_blank" rel="noreferrer">/pets/{petId}</a></li>
-      </ul>
-
+    <h2>Path List</h2>
+    <div id="mock-list">
+      Now Loading...
     </div>
-
     <hr>
     <div style="font-size:0.5em;">
       Source code:
