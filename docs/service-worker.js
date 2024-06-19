@@ -23,7 +23,7 @@ const initRuby = async () => {
 
 self.addEventListener('fetch', (event) => {
   const bootResources = [
-    "/boot.html", "/service-worker.js", "/boot.rb"
+    "/boot.html", "/service-worker.js", "/boot.rb", "/_default.yml"
   ]
   if (bootResources.find((r) => event.request.url.endsWith(r))) {
     console.log('[Service Worker] Fetching boot files from network:', event.request.url);
