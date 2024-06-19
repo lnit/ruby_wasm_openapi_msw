@@ -34,6 +34,7 @@
       document.getElementById("save").addEventListener("click", async () => {
         console.log("Save button clicked");
         const valid = vm.eval(`oas_valid?`).toJS();
+        console.log("Executed oas_valid?");
 
         if (valid) {
           const tx = db.transaction("apiSpecs", "readwrite");
@@ -42,6 +43,7 @@
           store.put({id: 1, specs: specText});
           await tx.done;
           console.log("Specs saved");
+          vm.eval(`visualize_mock_list`)
           return;
         } else {
           alert("OpenAPI Spec is invalid. Please fix it.");
@@ -199,16 +201,9 @@ components:
     <div style="padding:10px">
       <input type="button" id="save" value="保存"></input>
     </div>
-    <div id="mock_list">
-      <h2>Default Mock List</h2>
-      <ul>
-        <li>GET <a href="/pets" target="_blank" rel="noreferrer">/pets</a></li>
-        <li>POST /pets</li>
-        <li>GET <a href="/pets/1" target="_blank" rel="noreferrer">/pets/{petId}</a></li>
-      </ul>
-
+    <h2>Path List</h2>
+    <div id="mock-list">
     </div>
-
     <hr>
     <div style="font-size:0.5em;">
       Source code:
