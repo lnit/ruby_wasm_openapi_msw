@@ -2,7 +2,7 @@ import { DefaultRubyVM } from "https://cdn.jsdelivr.net/npm/@ruby/wasm-wasi@2.6.
 import { openDB, deleteDB, wrap, unwrap  } from 'https://cdn.jsdelivr.net/npm/idb@8/+esm';
 
 const initRuby = async () => {
-  const wasm_buf = fetch("https://cdn.jsdelivr.net/npm/@lni_t/openapi-msw-bin@beta/build/openapi-msw.wasm.gz")
+  const wasm_buf = fetch("https://cdn.jsdelivr.net/npm/@lni_t/openapi-msw-bin@0.0.4/build/openapi-msw.wasm.gz")
     .then(response => response.blob())
     .then(blob => blob.stream().pipeThrough(new DecompressionStream('gzip')))
     .then(stream => new Response(stream))
@@ -30,7 +30,11 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(fetch(event.request.url, { cache: "no-cache" }));
     return;
   }
-  if (event.request.url.includes("cdn.jsdelivr.net")) {
+
+  const libResources = [
+    "cdn.jsdelivr.net", ".wasm.gz"
+  ]
+  if (libResources.find((r) => event.request.url.includes(r))) {
     console.log('[Service Worker] Fetching lib files from network:', event.request.url);
     event.respondWith(fetch(event.request.url));
     return;
