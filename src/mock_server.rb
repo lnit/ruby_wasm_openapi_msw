@@ -39,6 +39,8 @@ class MockServer
   end
 
   def search_oas_path(path)
+    path.gsub!(/\A#{server_base_path}/, "") # serversで定義されている部分のパスはOASのpath定義に含まれないので除去
+
     target_path = doc.paths.keys.detect do |p|
       path_regex = p.gsub(/{.*?}/, ".*?")
       path =~ /\A#{path_regex}\Z/
@@ -67,10 +69,15 @@ class MockServer
         [method, detail]
       end.to_h
 
-      hash[path] = {
-        example_path: path.gsub(/{.*?}/, "1"),
+      path_with_server_base = "#{server_base_path}#{path}" # serversで定義されている部分のパスと結合して完全なパスを作成
+      hash[path_with_server_base] = {
+        example_path: path_with_server_base.gsub(/{.*?}/, "1"),
         operations:
       }
     end
+  end
+
+  def server_base_path
+    @server_base_path ||= URI.parse(doc.servers.first&.url || "").path
   end
 end
