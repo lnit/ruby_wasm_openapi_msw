@@ -10,7 +10,6 @@ GEM
     js (2.6.1)
     openapi3_parser (0.10.0)
       commonmarker (>= 1.0)
-    openapi_parser (2.1.0)
     rb_sys (0.9.97)
     ruby_wasm (2.6.1)
     ruby_wasm (2.6.1-aarch64-linux)
@@ -33,7 +32,6 @@ PLATFORMS
 DEPENDENCIES
   js (~> 2.6)
   openapi3_parser
-  openapi_parser
   ruby_wasm (~> 2.6)
   webrick
 
