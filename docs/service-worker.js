@@ -30,7 +30,11 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(fetch(event.request.url, { cache: "no-cache" }));
     return;
   }
-  if (event.request.url.includes("cdn.jsdelivr.net")) {
+
+  const libResources = [
+    "cdn.jsdelivr.net", ".wasm.gz"
+  ]
+  if (libResources.find((r) => event.request.url.includes(r))) {
     console.log('[Service Worker] Fetching lib files from network:', event.request.url);
     event.respondWith(fetch(event.request.url));
     return;
