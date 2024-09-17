@@ -24,8 +24,10 @@ module Openapi3Parser
           return 1
         when "string"
           return "string"
+        when "boolean"
+          return true
         else
-          return "test!"
+          return "unsupported type"
         end
       end
     end
@@ -39,5 +41,3 @@ module Openapi3Parser
     end
   end
 end
-
-puts "load completed"
