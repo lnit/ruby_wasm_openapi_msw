@@ -83,49 +83,54 @@
         font-size: 2em;
       }
     </style>
+    <section class="hero is-info">
+      <div class="hero-body">
+        <p class="title">OpenAPI Mock Server on Service Worker</p>
+      </div>
+    </section>
 
     <section>
-      <div class="container">
-        <h1 class="title">OpenAPI Mock Server on Service Worker</h2>
+      <div class="container py-4">
+        <div class="box">
+          <div class="columns">
+            <div class="column is-half">
+              <div class="field">
+                <label class="label">OpenAPI Spec YAML</label>
+                <div class="control">
+                  <textarea id="spec-text" class="textarea" rows="20" cols="50">Now Loading...</textarea>
+                </div>
+              </div>
+              <div id="error" class="error"></div>
 
-        <div class="columns">
-          <div class="column is-half">
-            <div class="field">
-              <label class="label">OpenAPI Spec YAML</label>
-              <div class="control">
-                <textarea id="spec-text" class="textarea" rows="20" cols="50">Now Loading...</textarea>
+              <div class="field">
+                <div class="control">
+                  <input type="button" id="save" class="button is-primary" value="保存"></input>
+                </div>
               </div>
             </div>
-            <div id="error" class="error"></div>
 
-            <div class="field">
-              <div class="control">
-                <input type="button" id="save" class="button is-primary" value="保存"></input>
-              </div>
+            <div class="column is-half">
+              <table class="table is-fullwidth is-hoverable">
+                <thead>
+                  <tr>
+                    <th width="10">Method</th>
+                    <th>Path</th>
+                  </tr>
+                </thead>
+                <tbody id="mock-list">
+                  <tr>
+                    <td>---</td>
+                    <td >Now Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-          </div>
-
-          <div class="column is-half">
-            <table class="table is-fullwidth is-hoverable">
-              <thead>
-                <tr>
-                  <th width="10">Method</th>
-                  <th>Path</th>
-                </tr>
-              </thead>
-              <tbody id="mock-list">
-                <tr>
-                  <td>---</td>
-                  <td >Now Loading...</td>
-                </tr>
-              </tbody>
-            </table>
           </div>
         </div>
       </div>
     </section>
 
-    <footer class="footer p-4 mt-4">
+    <footer class="footer">
       <div class="content has-text-centered is-size-7">
         Source code:
         <a href="https://github.com/lnit/ruby_wasm_openapi_msw" target="_blank" rel="noreferrer">
