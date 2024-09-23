@@ -30,25 +30,6 @@
       });
       console.log(`Database opened with version ${db.version}`);
 
-      // load data
-      const tx = db.transaction("apiSpecs");
-      const apiSpecs = tx.objectStore("apiSpecs");
-      const spec = await apiSpecs.get(1);
-      if (spec){
-        console.log("Specs loaded from indexedDB");
-        document.getElementById("spec-text").value = spec.specs;
-      } else {
-        // store seed data
-        console.log("Specs not found in indexedDB");
-        const defaultYml = await fetch("_default.yml")
-          .then(response => response.text());
-        const tx = db.transaction("apiSpecs", "readwrite");
-        const apiSpecs = tx.objectStore("apiSpecs");
-        apiSpecs.put({id: 1, specs: defaultYml});
-        document.getElementById("spec-text").value = defaultYml
-      }
-      vm.eval(`visualize_mock_list`)
-
       document.getElementById("save").addEventListener("click", async () => {
         console.log("Save button clicked");
         const valid = vm.eval(`oas_valid?`).toJS();
@@ -68,6 +49,25 @@
           return;
         }
       });
+
+      // load data
+      const tx = db.transaction("apiSpecs");
+      const apiSpecs = tx.objectStore("apiSpecs");
+      const spec = await apiSpecs.get(1);
+      if (spec){
+        console.log("Specs loaded from indexedDB");
+        document.getElementById("spec-text").value = spec.specs;
+      } else {
+        // store seed data
+        console.log("Specs not found in indexedDB");
+        const defaultYml = await fetch("_default.yml")
+          .then(response => response.text());
+        const tx = db.transaction("apiSpecs", "readwrite");
+        const apiSpecs = tx.objectStore("apiSpecs");
+        apiSpecs.put({id: 1, specs: defaultYml});
+        document.getElementById("spec-text").value = defaultYml
+      }
+      vm.eval(`visualize_mock_list`)
 
       await navigator.serviceWorker.register("/service-worker.js", {
         scope: "/", type: "module"
