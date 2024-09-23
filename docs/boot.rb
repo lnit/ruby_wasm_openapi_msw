@@ -25,18 +25,25 @@ def visualize_mock_list
   mock.all_paths.each do |path, v|
     example_path = v[:example_path]
     v[:operations].each do |method, operation|
-      li = ul.appendChild(document.createElement("li"))
-      if method == "get"
-        # GET method is linked to the example path
-        li[:textContent] = "#{method.upcase} "
-        li.appendChild(document.createElement("a")).tap do |a|
-          a[:textContent] = "#{path}"
-          a[:href] = example_path
-          a[:target] = "_blank"
-          a[:rel] = "noreferer"
+      # Output HTTP Method
+      tr = mock_list.appendChild(document.createElement("tr"))
+      tr.appendChild(document.createElement("td")).tap do |td|
+        td[:textContent] = method.upcase
+      end
+
+      # Output Path
+      tr.appendChild(document.createElement("td")).tap do |td|
+        if method == "get"
+          # GET method is linked to the example path
+          td.appendChild(document.createElement("a")).tap do |a|
+            a[:textContent] = path
+            a[:href] = example_path
+            a[:target] = "_blank"
+            a[:rel] = "noreferer"
+          end
+        else
+          td[:textContent] = path
         end
-      else
-        li[:textContent] = "#{method.upcase} #{path}"
       end
     end
   end
